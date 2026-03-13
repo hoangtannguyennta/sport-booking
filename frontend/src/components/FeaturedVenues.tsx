@@ -1,8 +1,12 @@
+import { useEffect, useState } from 'react';
+import api from '../services/api'
+
 type Venue = {
   id: number;
   name: string;
   image: string;
   rating: number;
+
   location: string;
   price: string;
   features: string[];
@@ -47,14 +51,36 @@ const venues: Venue[] = [
   },
 ];
 
+const vndFormatter = new Intl.NumberFormat('vi-VN', {
+  style: 'currency',
+  currency: 'VND',
+});
+
 const FeaturedVenues = () => {
+
+  const [venues, setVenues] = useState<Venue[]>([]);
+
+  const fetchData = async () => {
+    try {
+      const res = await api.get('/venues');
+      setVenues(res.data.data);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  useEffect(() => { 
+    fetchData();
+  }, []);
+
+
   return (
    <section className="section section-gray" id="venues">
       <div className="container">
         {/* Section header */}
         <div className="section-header">
           <span className="section-subtitle">Đề xuất</span>
-          <h2 className="section-title">Sân nổi bật</h2>
+          <h2 className="section-title">Sân nổi bật tại</h2>
           <p className="section-description">
             Những sân thể thao được đánh giá cao và đặt nhiều nhất
           </p>
@@ -65,7 +91,7 @@ const FeaturedVenues = () => {
           {venues.map((venue) => (
             <div key={venue.id} className="venue-card">
               <div className="venue-image">
-                <img src={venue.image} alt={venue.name} />
+                <img src={venue.image_url} alt={venue.name} />
 
                 {venue.badge && (
                   <span
@@ -101,20 +127,20 @@ const FeaturedVenues = () => {
                     <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
                     <circle cx="12" cy="10" r="3" />
                   </svg>
-                  {venue.location}
+                  {venue.address}
                 </p>
 
                 <div className="venue-features">
-                  {venue.features.map((feature) => (
+                  {/* {venue.features.map((feature) => (
                     <span key={feature} className="feature-tag">
                       {feature}
                     </span>
-                  ))}
+                  ))} */}
                 </div>
 
                 <div className="venue-footer">
                   <div className="venue-price">
-                    <span className="price-value">{venue.price}</span>
+                    <span className="price-value">{vndFormatter.format(venue.price_per_hour)}</span>
                     <span className="price-unit">/giờ</span>
                   </div>
 

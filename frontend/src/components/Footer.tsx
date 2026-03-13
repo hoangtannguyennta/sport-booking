@@ -1,5 +1,3 @@
-import { MapPin, Phone, Mail, Facebook, Instagram, Youtube, MessageCircle } from "lucide-react";
-
 const Footer = () => {
   return (
     <footer className="footer">
@@ -16,8 +14,7 @@ const Footer = () => {
             </div>
 
             <p className="footer-about">
-              Nền tảng đặt sân thể thao hàng đầu Việt Nam. Kết nối người chơi với
-              các sân bãi chất lượng trên toàn quốc.
+              © 2026 SportBook. Kết nối đam mê thể thao.
             </p>
 
             <div className="social-links">
@@ -29,7 +26,7 @@ const Footer = () => {
           </div>
 
           {/* Quick Links */}
-          <div className="footer-col">
+          {/* <div className="footer-col">
             <h4>Truy cập nhanh</h4>
             <ul className="footer-links">
               <li><a href="#">Trang chủ</a></li>
@@ -39,10 +36,10 @@ const Footer = () => {
               <li><a href="#">Đăng ký đối tác</a></li>
               <li><a href="#">Blog thể thao</a></li>
             </ul>
-          </div>
+          </div> */}
 
           {/* Support */}
-          <div className="footer-col">
+          {/* <div className="footer-col">
             <h4>Hỗ trợ</h4>
             <ul className="footer-links">
               <li><a href="#">Hướng dẫn đặt sân</a></li>
@@ -51,7 +48,7 @@ const Footer = () => {
               <li><a href="#">Chính sách bảo mật</a></li>
               <li><a href="#">Câu hỏi thường gặp</a></li>
             </ul>
-          </div>
+          </div> */}
 
           {/* Contact */}
           <div className="footer-col">
@@ -71,7 +68,7 @@ const Footer = () => {
                   <circle cx="12" cy="10" r="3" />
                 </svg>
                 <span>
-                  123 Nguyễn Văn Linh, Quận 7, TP. Hồ Chí Minh
+                  97 Ngô Đức Kế, TP-HUẾ
                 </span>
               </li>
 
@@ -107,13 +104,13 @@ const Footer = () => {
               </li>
             </ul>
 
-            <div className="app-badges">
+            {/* <div className="app-badges">
               <p>Tải ứng dụng</p>
               <div className="badge-buttons">
                 <a href="#" className="app-badge">App Store</a>
                 <a href="#" className="app-badge">Google Play</a>
               </div>
-            </div>
+            </div> */}
           </div>
         </div>
       </div>
@@ -121,12 +118,12 @@ const Footer = () => {
       {/* Bottom Bar */}
       <div className="footer-bottom">
         <div className="container footer-bottom-content">
-          <p>© 2024 SportBook. Bảo lưu mọi quyền.</p>
-          <div className="footer-bottom-links">
+          <p>© 2026 SportBook. Bảo lưu mọi quyền.</p>
+          {/* <div className="footer-bottom-links">
             <a href="#">Điều khoản</a>
             <a href="#">Bảo mật</a>
             <a href="#">Cookies</a>
-          </div>
+          </div> */}
         </div>
       </div>
     </footer>

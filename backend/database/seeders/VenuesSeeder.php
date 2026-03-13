@@ -13,22 +13,22 @@ class VenuesSeeder extends Seeder
         DB::table('venues')->insert([
             [
                 'sport_id' => 1,
-                'name' => 'Sân bóng Phú Mỹ Hưng',
-                'address' => 'Quận 7, TP.HCM',
+                'name' => 'Sân bóng Tây Lộc',
+                'address' => '97 Nguyễn Trãi, Huế',
                 'image' => 'venues/football-1.jpg',
                 'price_per_hour' => 500000,
             ],
             [
                 'sport_id' => 2,
-                'name' => 'Tennis Club Thảo Điền',
-                'address' => 'Quận 2, TP.HCM',
+                'name' => 'Sân cầu lông Tây Lộc',
+                'address' => '97 Nguyễn Trãi, Huế',
                 'image' => 'venues/tennis-1.jpg',
                 'price_per_hour' => 300000,
             ],
             [
                 'sport_id' => 3,
-                'name' => 'CLB Cầu Lông Tân Bình',
-                'address' => 'Tân Bình, TP.HCM',
+                'name' => 'CLB Cầu Lông Gia Hội',
+                'address' => '27 Lê Lợi, Huế',
                 'image' => 'venues/badminton-1.jpg',
                 'price_per_hour' => 500000,
             ],

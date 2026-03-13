@@ -1,6 +1,3 @@
-import { Search, MapPin, Calendar } from "lucide-react";
-import { Button } from "./Button";
-
 const Hero = () => {
   return (
       <section className="hero">
