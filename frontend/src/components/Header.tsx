@@ -1,6 +1,4 @@
-import { MapPin, Phone, Menu, X } from "lucide-react";
 import { useState } from "react";
-import { Button } from "./Button";
 
 const Header = () => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
@@ -9,7 +7,7 @@ const Header = () => {
   };
 
   return (
-  <header className="header">
+    <header className="header">
       {/* Top bar */}
       <div className="top-bar">
         <div className="container top-bar-content">
@@ -68,7 +66,6 @@ const Header = () => {
             <a href="#" className="nav-link active">Trang chủ</a>
             <a href="#sports" className="nav-link">Môn thể thao</a>
             <a href="#venues" className="nav-link">Sân bãi</a>
-            <a href="#" className="nav-link">Khuyến mãi</a>
             <a href="#" className="nav-link">Liên hệ</a>
           </nav>
 

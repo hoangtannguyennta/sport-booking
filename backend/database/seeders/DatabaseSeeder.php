@@ -26,6 +26,7 @@ class DatabaseSeeder extends Seeder
             VenuesSeeder::class,
             TimeSlotsSeeder::class,
             BookingsSeeder::class,
+            MatchSeeder::class
         ]);
     }
 }

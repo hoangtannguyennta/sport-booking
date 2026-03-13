@@ -5,6 +5,8 @@ namespace Database\Seeders;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use App\Models\User;
+use Carbon\Carbon;
 
 class BookingsSeeder extends Seeder
 {
@@ -15,14 +17,23 @@ class BookingsSeeder extends Seeder
      */
     public function run()
     {
-        DB::table('bookings')->insert([
-            [
-                'user_id' => 1,
-                'venue_id' => 1,
-                'time_slot_id' => 1,
-                'booking_date' => now()->toDateString(),
-                'status' => 'confirmed',
-            ],
-        ]);
+        $users = User::pluck('id');
+        $venues = DB::table('venues')->get();
+        $timeSlots = DB::table('time_slots')->pluck('id');
+
+        foreach ($venues as $venue) {
+
+            DB::table('bookings')->insert([
+                'user_id'      => $users->random(),
+                'venue_id'     => $venue->id,
+                'time_slot_id' => $timeSlots->random(),
+                'booking_date' => Carbon::now()
+                    ->addDays(rand(0, 3))
+                    ->toDateString(),
+                'status'       => collect(['confirmed', 'pending'])->random(),
+                'created_at'   => now(),
+                'updated_at'   => now(),
+            ]);
+    }
     }
 }
