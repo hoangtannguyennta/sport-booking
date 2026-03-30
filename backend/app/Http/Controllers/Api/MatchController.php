@@ -45,7 +45,7 @@ class MatchController extends Controller
         ]);
 
         // Host auto join match
-        $match->users()->attach($booking->user_id);
+        $match->usersMatch()->attach($booking->user_id, ['role' => 'host']);
 
         return response()->json([
             'message' => 'Match created successfully',
@@ -58,16 +58,17 @@ class MatchController extends Controller
     {
         $match = Matches::findOrFail($id);
 
-        if ($match->users()->count() >= $match->max_players) {
+        if ($match->usersMatch()->count() >= $match->max_players) {
             return response()->json([
                 'message' => 'Match is full'
             ], 400);
         }
-
-        $match->users()->syncWithoutDetaching(auth()->id());
+        
+        $match->usersMatch()->syncWithoutDetaching(auth()->id());
 
         return response()->json([
-            'message' => 'Joined match successfully'
+            'message' => 'Joined match successfully',
+            'auth_id' => auth()->id()
         ]);
     }
 
@@ -75,7 +76,7 @@ class MatchController extends Controller
     public function leave($id)
     {
         $match = Matches::findOrFail($id);
-        $match->users()->detach(auth()->id());
+        $match->usersMatch()->detach(auth()->id());
 
         return response()->json([
             'message' => 'Left match'
@@ -88,7 +89,7 @@ class MatchController extends Controller
         $match = Matches::with([
             'booking.venue',
             'booking.timeSlot',
-            'users',
+            'usersMatch',
             'host'
         ])->findOrFail($id);
 

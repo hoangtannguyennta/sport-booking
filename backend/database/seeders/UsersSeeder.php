@@ -25,14 +25,14 @@ class UsersSeeder extends Seeder
                 'updated_at' => now(),
             ],
             [
-                'name' => 'Nguyễn Văn A',
+                'name' => 'Hoàng Tấn Nguyên',
                 'email' => 'user1@sportbook.vn',
                 'password' => Hash::make('password123'),
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
-                'name' => 'Trần Thị B',
+                'name' => 'Nguyễn Đình Văn',
                 'email' => 'user2@sportbook.vn',
                 'password' => Hash::make('password123'),
                 'created_at' => now(),

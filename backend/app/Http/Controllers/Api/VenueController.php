@@ -39,7 +39,7 @@ class VenueController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $query->with('timeSlots')->latest()->get()
+            'data' => $query->latest()->get()
         ]);
     }
 
@@ -136,10 +136,6 @@ class VenueController extends Controller
         ]);
     }
 
-    /**
-     * POST /api/venues/parse-search
-     * Phân tích câu tìm kiếm của người dùng bằng Gemini
-     */
     public function parseSearch(Request $request)
     {
         $request->validate(['query' => 'required|string']);
@@ -151,7 +147,9 @@ class VenueController extends Controller
             return response()->json(['error' => 'AI service is not configured. Please set GEMINI_API_KEY in your .env file.'], 500);
         }
 
-        $apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key={$apiKey}";
+        // Use v1beta for better JSON support with Gemini 1.5 Flash
+        $baseUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
+        $apiUrl = $baseUrl . '?key=' . urlencode($apiKey);
 
         $prompt = "
             You are an intelligent assistant for a sports booking application.
@@ -164,14 +162,21 @@ class VenueController extends Controller
             - 'sport': The type of sport (e.g., 'cầu lông', 'bóng đá').
             - 'address': The location or district (e.g., 'phú nhuận', 'quận 7').
 
-            Return ONLY a valid JSON object as the result. Do not include any other text, explanations, or markdown formatting like ```json.
+            Return a valid JSON object.
 
             User query: \"{$userQuery}\"
         ";
 
         $payload = [
             'contents' => [
-                ['parts' => [['text' => $prompt]]]
+                [
+                    'parts' => [
+                        ['text' => $prompt]
+                    ]
+                ]
+            ],
+            'generationConfig' => [
+                'responseMimeType' => 'application/json'
             ]
         ];
 
@@ -179,25 +184,59 @@ class VenueController extends Controller
             $response = Http::post($apiUrl, $payload);
 
             if (!$response->successful()) {
-                Log::error('Gemini API request failed', ['response' => $response->json()]);
-                return response()->json(['error' => 'Error communicating with AI service.', 'details' => $response->json()], $response->status());
+                $errorDetails = $response->json();
+
+                // Nếu lỗi 404 (Model not found), thử lấy danh sách model khả dụng để debug
+                if ($response->status() === 404) {
+                    try {
+                        $listResponse = Http::get("https://generativelanguage.googleapis.com/v1beta/models?key=" . urlencode($apiKey));
+                        if ($listResponse->successful()) {
+                            $availableModels = collect($listResponse->json('models', []))
+                                ->filter(fn($m) => in_array('generateContent', $m['supportedGenerationMethods'] ?? []))
+                                ->pluck('name')
+                                ->values();
+                            $errorDetails['available_models'] = $availableModels;
+                            $errorDetails['hint'] = 'Model gemini-1.5-flash không tìm thấy. Hãy sử dụng một trong các model trong available_models.';
+                        }
+                    } catch (\Exception $e) { /* ignore */ }
+                }
+
+                Log::error('Gemini API request failed', [
+                    'status' => $response->status(),
+                    'response' => $errorDetails
+                ]);
+                return response()->json([
+                    'error' => 'Error communicating with AI service.',
+                    'details' => $errorDetails
+                ], $response->status());
             }
 
-            $responseText = $response->json('candidates.0.content.parts.0.text');
+            // The structure is usually candidates[0].content.parts[0].text
+            $responseData = $response->json();
+            $responseText = data_get($responseData, 'candidates.0.content.parts.0.text');
 
             if (!$responseText) {
-                Log::warning('Gemini API response did not contain expected text.', ['response' => $response->json()]);
+                Log::warning('Gemini API response did not contain expected text.', ['response' => $responseData]);
                 return response()->json(['error' => 'AI service returned an empty or invalid response.'], 500);
             }
 
-            $jsonString = trim(str_replace(['```json', '```'], '', $responseText));
-            $parsedData = json_decode($jsonString, true);
+            // Try to parse JSON directly
+            $parsedData = json_decode($responseText, true);
 
             if (json_last_error() !== JSON_ERROR_NONE) {
-                return response()->json(['error' => 'Failed to parse AI response as JSON.', 'raw_response' => $result->text()], 500);
+                // Fallback: clean up markdown if present
+                $jsonString = trim(str_replace(['```json', '```', "\n"], '', $responseText));
+                $parsedData = json_decode($jsonString, true);
             }
 
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                Log::error('JSON decode failed', ['error' => json_last_error_msg(), 'raw' => $responseText]);
+                return response()->json(['error' => 'Failed to parse AI response as JSON.', 'raw_response' => $responseText], 500);
+            }
+
+            // Optionally ensure it has the expected keys or add defaults
             return response()->json($parsedData);
+
         } catch (\Exception $e) {
             Log::error('Exception when calling Gemini API', ['message' => $e->getMessage()]);
             return response()->json(['error' => 'An unexpected error occurred: ' . $e->getMessage()], 500);

@@ -265,7 +265,7 @@
 /* Spots Badge */
 .spots-badge {
   position: absolute;
-  top: -8px;
+  top: -15px;
   right: 12px;
   background: var(--color-warning);
   color: white;
