@@ -31,6 +31,7 @@ Route::get('/sports', [SprotController::class, 'index']);
 Route::prefix('venues')->name('venues.')->group(function () {
     Route::get('/', [VenueController::class, 'index'])->name('index');
     Route::get('/{id}', [VenueController::class, 'show'])->name('show');
+    Route::get('/{id}/bookings', [VenueController::class, 'showBooking'])->name('show-booking');
     Route::post('/', [VenueController::class, 'store'])->name('store');
     Route::put('/{id}', [VenueController::class, 'update'])->name('update');
     Route::delete('/{id}', [VenueController::class, 'destroy'])->name('destroy');

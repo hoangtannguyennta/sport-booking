@@ -1,20 +1,42 @@
-type Sport = {
-  name: string;
-  count: string;
-  icon: string;
-  color: string;
-};
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import api from '../services/api';
 
-const sports: Sport[] = [
-  { name: "Bóng đá", count: "150+ sân", icon: "⚽", color: "#22c55e" },
-  { name: "Tennis", count: "80+ sân", icon: "🎾", color: "#eab308" },
-  { name: "Cầu lông", count: "120+ sân", icon: "🏸", color: "#3b82f6" },
-  { name: "Bơi lội", count: "45+ hồ bơi", icon: "🏊", color: "#06b6d4" },
-  { name: "Bóng rổ", count: "60+ sân", icon: "🏀", color: "#f97316" },
-  { name: "Gym", count: "90+ phòng", icon: "🏋️", color: "#a855f7" },
-];
+interface Sport {
+  id: number;
+  name: string;
+  icon: string;
+  color?: string;
+  venues_count?: number;
+}
 
 const SportCategories = () => {
+  const [sports, setSports] = useState<Sport[]>([]);
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchSports = async () => {
+      try {
+        const res = await api.get('/sports');
+        if (res.data.success) {
+          setSports(res.data.data);
+        }
+      } catch (error) {
+        console.error("Lỗi khi lấy danh sách môn thể thao:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSports();
+  }, []);
+
+  const handleSportClick = (sportName: string) => {
+    // Chuyển hướng sang trang venues với query param sport
+    navigate(`/venues?sport=${encodeURIComponent(sportName)}`);
+  };
+
   return (
     <section className="section" id="sports">
       <div className="container">
@@ -29,17 +51,29 @@ const SportCategories = () => {
 
         {/* Sports grid */}
         <div className="sports-grid">
-          {sports.map((sport) => (
+          {loading ? (
+            <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '2rem' }}>
+              <div style={{ textAlign: 'center', padding: '5rem', background: 'white', borderRadius: '1rem' }}>
+                  <div className="spinner" style={{ margin: '0 auto 1rem' }}></div>
+                  <p style={{ color: '#64748b' }}>Đang quét dữ môn thể thao...</p>
+                </div>
+            </div>
+          ) : (
+            sports.map((sport) => (
             <div
-              key={sport.name}
+              key={sport.id}
               className="sport-card"
-              style={{ "--sport-color": sport.color } as React.CSSProperties}
+              style={{ 
+                "--sport-color": sport.color || '#6366f1', 
+                cursor: 'pointer' 
+              } as React.CSSProperties}
+              onClick={() => handleSportClick(sport.name)}
             >
               <div className="sport-icon">{sport.icon}</div>
               <h3>{sport.name}</h3>
-              <p>{sport.count}</p>
+              <p>{sport.venues_count || 0}+ sân</p>
             </div>
-          ))}
+          )))}
         </div>
       </div>
     </section>

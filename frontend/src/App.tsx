@@ -3,6 +3,7 @@ import './App.css'
 import api from './services/api'
 import { BrowserRouter } from 'react-router-dom';
 import AppRoutes from './routes/AppRoutes';
+import { Toaster } from "react-hot-toast";
 
 function App() {
   const [message, setMessage] = useState('');
@@ -25,6 +26,7 @@ function App() {
     <>
       <BrowserRouter>
         <AppRoutes />
+        <Toaster position="top-right" />
       </BrowserRouter>
     </>
   )

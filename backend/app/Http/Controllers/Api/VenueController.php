@@ -44,7 +44,10 @@ class VenueController extends Controller
             }
 
             if ($request->filled('sport') && $request->input('sport') !== 'all') {
-                $query->where('name', 'like', '%' . $request->input('sport') . '%');
+                $sportName = $request->input('sport');
+                $query->whereHas('sport', function ($q) use ($sportName) {
+                    $q->where('name', 'like', '%' . $sportName . '%');
+                });
             }
 
             if ($request->filled('date')) {
@@ -107,6 +110,20 @@ class VenueController extends Controller
             'data' => $venue
         ]);
     }
+
+    /**
+     * GET /api/venues/{id}/bookings
+     */
+    public function showBooking($id)
+    {
+        $bookings = Venue::findOrFail($id)->bookings()->with(['timeSlot', 'user', 'venue'])->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $bookings
+        ]);
+    }
+
 
     /**
      * PUT /api/venues/{id}

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import api from "../services/api";
 import { LocationIcon, CalendarIcon, ClockIcon, UsersIcon, ArrowRightIcon, SparklesIcon, SearchIcon } from "./icons/Icons";
+import toast from 'react-hot-toast';
 
 interface User {
   id: number;
@@ -52,14 +53,15 @@ const Matches = ({ refreshTrigger }: MatchesProps) => {
   const handleJoin = async (id: number) => {
     if (!window.confirm("Bạn có muốn tham gia trận đấu này không?")) return;
 
+
     setProcessingId(id);
     try {
       await api.post(`/matches/${id}/join`);
-      alert("Tham gia thành công!");
+      toast.success("Tham gia trận đấu thành công!");
       await fetchMatches(); // Tải lại danh sách
     } catch (error: any) {
       const msg = error.response?.data?.message || "Lỗi khi tham gia trận đấu";
-      alert(msg);
+      toast.error(msg);
     } finally {
       setProcessingId(null);
     }
@@ -71,10 +73,10 @@ const Matches = ({ refreshTrigger }: MatchesProps) => {
     setProcessingId(id);
     try {
       await api.post(`/matches/${id}/leave`);
-      alert("Đã rời trận đấu.");
+      toast.success("Đã rời trận đấu.");
       await fetchMatches(); // Tải lại danh sách
     } catch (error: any) {
-      alert("Lỗi khi rời trận đấu");
+      toast.error("Lỗi khi rời trận đấu");
     } finally {
       setProcessingId(null);
     }

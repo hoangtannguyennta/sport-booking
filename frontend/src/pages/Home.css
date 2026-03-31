@@ -510,6 +510,7 @@ img {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 1rem;
+  justify-content: center;
 }
 
 @media (min-width: 640px) {
@@ -520,7 +521,7 @@ img {
 
 @media (min-width: 1024px) {
   .sports-grid {
-    grid-template-columns: repeat(6, 1fr);
+    grid-template-columns: repeat(4, 1fr);
   }
 }
 

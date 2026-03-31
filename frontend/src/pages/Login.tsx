@@ -31,7 +31,6 @@ const Login = () => {
       // Cấu hình axios để các request sau tự động gửi kèm token
       api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 
-      alert('Đăng nhập thành công!');
       navigate('/'); // Quay lại trang chủ
     } catch (err: any) {
       if (err.response && err.response.data) {

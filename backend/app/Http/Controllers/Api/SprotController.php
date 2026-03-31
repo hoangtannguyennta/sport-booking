@@ -13,7 +13,7 @@ class SprotController extends Controller
      */
     public function index()
     {
-        $sports = Sport::all();
+        $sports = Sport::withCount('venues')->get();
         return response()->json([
             'success' => true,
             'data' => $sports

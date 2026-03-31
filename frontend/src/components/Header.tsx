@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
+import toast from "react-hot-toast";
 
 interface HeaderProps {
   onVenueSuccess?: () => void;
@@ -85,7 +86,7 @@ const Header = ({ onVenueSuccess }: HeaderProps) => {
 
     const token = localStorage.getItem('token');
     if (!token) {
-      alert("Vui lòng đăng nhập để thực hiện chức năng này!");
+      toast.error("Vui lòng đăng nhập để thực hiện chức năng này!");
       navigate('/login');
       return;
     }
@@ -106,7 +107,7 @@ const Header = ({ onVenueSuccess }: HeaderProps) => {
       await api.post('/venues', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
-      alert('Gửi yêu cầu đăng ký sân thành công! Chúng tôi sẽ liên hệ lại sớm.');
+      toast.success('Gửi yêu cầu đăng ký sân thành công! Chúng tôi sẽ liên hệ lại sớm.');
       setIsVenueModalOpen(false);
       setVenueData({ name: '', address: '', price_per_hour: '', sport_id: '' });
       setImageFile(null);
@@ -114,7 +115,7 @@ const Header = ({ onVenueSuccess }: HeaderProps) => {
 
       if (onVenueSuccess) onVenueSuccess();
     } catch (error: any) {
-      alert(error.response?.data?.message || 'Có lỗi xảy ra khi đăng ký sân');
+      toast.error(error.response?.data?.message || 'Có lỗi xảy ra khi đăng ký sân');
     } finally {
       setIsSubmitting(false);
     }

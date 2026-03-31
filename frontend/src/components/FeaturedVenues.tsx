@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import api from '../services/api'
 import { useNavigate } from 'react-router-dom';
 import { SparklesIcon, SearchIcon } from './icons/Icons';
+import toast from 'react-hot-toast';
 
 type Venue = {
   id: number;
@@ -81,7 +82,7 @@ const FeaturedVenues = ({ onBookingSuccess, venueTrigger }: FeaturedVenuesProps)
   const handleOpenBooking = (venue: Venue) => {
     const token = localStorage.getItem('token');
     if (!token) {
-      alert("Vui lòng đăng nhập để đặt sân!");
+      toast.error("Vui lòng đăng nhập để đặt sân!");
       navigate('/login');
       return;
     }
@@ -106,11 +107,11 @@ const FeaturedVenues = ({ onBookingSuccess, venueTrigger }: FeaturedVenuesProps)
         skill_level: skillLevel,
         note: note
       });
-      alert("Đặt sân và tạo trận đấu thành công!");
+      toast.success("Đặt sân và tạo trận đấu thành công!");
       setSelectedVenue(null);
       if (onBookingSuccess) onBookingSuccess();
     } catch (error: any) {
-      alert(error.response?.data?.message || "Lỗi khi đặt sân");
+      toast.error(error.response?.data?.message || "Lỗi khi đặt sân");
     } finally {
       setLoading(false);
     }
@@ -186,8 +187,11 @@ const FeaturedVenues = ({ onBookingSuccess, venueTrigger }: FeaturedVenuesProps)
         <div className="venues-grid">
           {venues.length === 0 && !isSearching && (
             <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '3rem', color: '#94a3b8' }}>
-              <h3>Không tìm thấy sân phù hợp</h3>
-              <p>Hãy thử yêu cầu khác bằng ngôn ngữ tự nhiên.</p>
+              <div style={{ textAlign: 'center', padding: '5rem',borderRadius: '1rem' }}>
+                  <div className="spinner" style={{ margin: '0 auto 1rem' }}></div>
+                  <h3>Không tìm thấy sân phù hợp</h3>
+                  <p>Hãy thử yêu cầu khác bằng ngôn ngữ tự nhiên.</p>
+              </div>
             </div>
           )}
           {venues.map((venue) => (

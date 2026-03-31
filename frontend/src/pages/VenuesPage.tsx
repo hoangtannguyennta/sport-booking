@@ -17,6 +17,18 @@ type Venue = {
   };
 };
 
+type BookingDetail = {
+  id: number;
+  booking_date: string;
+  time_slot: {
+    start_time: string;
+    end_time: string;
+  };
+  user: {
+    name: string;
+  };
+};
+
 const vndFormatter = new Intl.NumberFormat('vi-VN', {
   style: 'currency',
   currency: 'VND',
@@ -29,6 +41,9 @@ const VenuesPage = () => {
   const [aiQuery, setAiQuery] = useState("");
   const [isAiSearching, setIsAiSearching] = useState(false);
   const [aiFilters, setAiFilters] = useState<any>(null);
+  const [selectedVenueBookings, setSelectedVenueBookings] = useState<BookingDetail[]>([]);
+  const [detailVenue, setDetailVenue] = useState<Venue | null>(null);
+  const [isDetailLoading, setIsDetailLoading] = useState(false);
 
   const fetchVenues = async () => {
     setLoading(true);
@@ -74,6 +89,19 @@ const VenuesPage = () => {
     setSearchParams({ query: aiQuery });
   };
 
+  const handleShowDetail = async (venue: Venue) => {
+    setDetailVenue(venue);
+    setIsDetailLoading(true);
+    try {
+      const res = await api.get(`/venues/${venue.id}/bookings`);
+      setSelectedVenueBookings(res.data.data || []);
+    } catch (error) {
+      console.error("Lỗi khi tải lịch đặt sân:", error);
+    } finally {
+      setIsDetailLoading(false);
+    }
+  };
+
   return (
     <>
       <Header/>
@@ -115,7 +143,7 @@ const VenuesPage = () => {
                     background: 'transparent',
                     fontSize: '1.1rem'
                   }}
-                  placeholder="Thử: 'Sân tennis tại Quận 1 sáng thứ 7 tới'..."
+                  placeholder="Thử: 'Sân cầu lông ở Huế vào thứ 7 tuần này'..."
                   value={aiQuery}
                   onChange={(e) => setAiQuery(e.target.value)}
                 />
@@ -245,7 +273,7 @@ const VenuesPage = () => {
                               <span className="price-value">{vndFormatter.format(venue.price_per_hour)}</span>
                               <span className="price-unit">/giờ</span>
                             </div>
-                            <button className="btn btn-primary btn-sm">Chi tiết</button>
+                            <button className="btn btn-primary btn-sm" onClick={() => handleShowDetail(venue)}>Chi tiết</button>
                           </div>
                         </div>
                       </div>
@@ -256,6 +284,79 @@ const VenuesPage = () => {
             </div>
           </div>
         </div>
+
+        {/* Modal Chi tiết lịch đặt sân */}
+        {detailVenue && (
+          <div className="modal-overlay" style={{
+            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+            backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex',
+            justifyContent: 'center', alignItems: 'center', zIndex: 1000
+          }}>
+            <div className="modal-content" style={{
+              background: 'white', padding: '2rem', borderRadius: '1.25rem',
+              width: '100%', maxWidth: '600px', position: 'relative',
+              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)'
+            }}>
+              <button
+                onClick={() => setDetailVenue(null)}
+                style={{ position: 'absolute', top: '1rem', right: '1rem', border: 'none', background: 'none', fontSize: '1.5rem', cursor: 'pointer', color: '#64748b' }}
+              >
+                ×
+              </button>
+              
+              <div style={{ marginBottom: '1.5rem' }}>
+                <h2 style={{ fontSize: '1.5rem', color: '#1e293b', marginBottom: '0.5rem' }}>Lịch đặt sân</h2>
+                <p style={{ color: '#6366f1', fontWeight: 600 }}>{detailVenue.name}</p>
+              </div>
+
+              <div style={{ maxHeight: '400px', overflowY: 'auto', paddingRight: '0.5rem' }}>
+                {isDetailLoading ? (
+                  <div style={{ textAlign: 'center', padding: '2rem' }}>Đang tải lịch đặt...</div>
+                ) : selectedVenueBookings.length === 0 ? (
+                  <div style={{ textAlign: 'center', padding: '3rem', color: '#94a3b8', border: '2px dashed #e2e8f0', borderRadius: '1rem' }}>
+                    Hiện chưa có lịch đặt nào cho sân này.
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    {selectedVenueBookings.map((booking) => (
+                      <div key={booking.id} style={{ 
+                        padding: '1rem', 
+                        borderRadius: '0.75rem', 
+                        border: '1px solid #e2e8f0',
+                        background: '#f8fafc',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center'
+                      }}>
+                        <div>
+                          <div style={{ fontWeight: 700, color: '#334155', marginBottom: '0.25rem' }}>
+                            {new Date(booking.booking_date).toLocaleDateString('vi-VN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                          </div>
+                          <div style={{ fontSize: '0.9rem', color: '#64748b', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                            <span style={{ color: '#6366f1', fontWeight: 600 }}>{booking.time_slot.start_time.substring(0, 5)} - {booking.time_slot.end_time.substring(0, 5)}</span>
+                            <span>•</span>
+                            <span>Người đặt: {booking.user.name}</span>
+                          </div>
+                        </div>
+                        <div style={{ background: '#dcfce7', color: '#166534', padding: '4px 12px', borderRadius: '1rem', fontSize: '0.75rem', fontWeight: 700 }}>
+                          Đã xác nhận
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <button 
+                className="btn btn-primary" 
+                style={{ width: '100%', marginTop: '1.5rem', borderRadius: '0.75rem' }}
+                onClick={() => setDetailVenue(null)}
+              >
+                Đóng
+              </button>
+            </div>
+          </div>
+        )}
       </main>
     </>
 
