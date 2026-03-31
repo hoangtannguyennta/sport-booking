@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import api from '../services/api'
 import { useNavigate } from 'react-router-dom';
+import { SparklesIcon, SearchIcon } from './icons/Icons';
 
 type Venue = {
   id: number;
@@ -36,6 +37,9 @@ const FeaturedVenues = ({ onBookingSuccess, venueTrigger }: FeaturedVenuesProps)
   const [selectedVenue, setSelectedVenue] = useState<Venue | null>(null);
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
   const [loading, setLoading] = useState(false);
+  const [aiQuery, setAiQuery] = useState("");
+  const [isSearching, setIsSearching] = useState(false);
+  const [filterInfo, setFilterInfo] = useState<{ sport?: string; date?: string; address?: string } | null>(null);
   const navigate = useNavigate();
 
   // Form state
@@ -45,12 +49,18 @@ const FeaturedVenues = ({ onBookingSuccess, venueTrigger }: FeaturedVenuesProps)
   const [skillLevel, setSkillLevel] = useState('all');
   const [note, setNote] = useState('');
 
-  const fetchData = async () => {
+  const fetchData = async (searchQuery?: string) => {
+    if (searchQuery) setIsSearching(true);
     try {
-      const res = await api.get('/venues');
-      setVenues(res.data.data);
+      const res = await api.get('/venues', {
+        params: searchQuery ? { query: searchQuery } : {}
+      });
+      setVenues(res.data.data || []);
+      setFilterInfo(res.data.ai_filters || null);
     } catch (error) {
       console.error(error);
+    } finally {
+      setIsSearching(false);
     }
   };
 
@@ -76,6 +86,12 @@ const FeaturedVenues = ({ onBookingSuccess, venueTrigger }: FeaturedVenuesProps)
       return;
     }
     setSelectedVenue(venue);
+  };
+
+  const handleAISearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!aiQuery.trim()) return;
+    fetchData(aiQuery);
   };
 
   const handleBookingSubmit = async (e: React.FormEvent) => {
@@ -104,16 +120,60 @@ const FeaturedVenues = ({ onBookingSuccess, venueTrigger }: FeaturedVenuesProps)
    <section className="section section-gray" id="venues">
       <div className="container">
         {/* Section header */}
-        <div className="section-header">
+        <div className="section-header" style={{ marginBottom: '2rem' }}>
           <span className="section-subtitle">Đề xuất</span>
-          <h2 className="section-title">Sân nổi bật tại</h2>
-          <p className="section-description">
-            Những sân thể thao được đánh giá cao và đặt nhiều nhất
-          </p>
+          <h2 className="section-title">Khám phá các sân thể thao</h2>
+        </div>
+
+        {/* AI Search Bar */}
+        <div className="ai-search-container" style={{ marginBottom: '3rem' }}>
+          <form onSubmit={handleAISearch} style={{ 
+            display: 'flex', 
+            alignItems: 'center',
+            background: 'white',
+            padding: '6px',
+            borderRadius: '1.25rem',
+            boxShadow: '0 4px 20px rgba(0,0,0,0.05)',
+            border: '1px solid #e5e7eb'
+          }}>
+            <div style={{ paddingLeft: '1rem', color: '#6366f1' }}>
+              <SparklesIcon />
+            </div>
+            <input 
+              type="text" 
+              style={{ flex: 1, padding: '0.8rem 1rem', border: 'none', outline: 'none', fontSize: '1rem' }}
+              placeholder="Hỏi AI: Tìm sân cầu lông tại Huế vào tối mai..."
+              value={aiQuery}
+              onChange={(e) => setAiQuery(e.target.value)}
+            />
+            <button 
+              type="submit" 
+              className="btn btn-primary"
+              style={{ padding: '0.6rem 1.5rem', borderRadius: '1rem', display: 'flex', alignItems: 'center', gap: '8px' }}
+              disabled={isSearching}
+            >
+              {isSearching ? "Đang tìm..." : <><SearchIcon /> Tìm bằng AI</>}
+            </button>
+          </form>
+          {filterInfo && (
+            <div style={{ marginTop: '1rem', display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <span style={{ fontSize: '0.85rem', color: '#64748b' }}>Đang lọc:</span>
+              <div style={{ background: '#eef2ff', color: '#6366f1', padding: '4px 12px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: '600' }}>
+                {filterInfo.sport || 'Môn học'} {filterInfo.address && `• ${filterInfo.address}`} {filterInfo.date && `• ${filterInfo.date}`}
+              </div>
+              <button onClick={() => { setAiQuery(""); fetchData(); }} style={{ fontSize: '0.8rem', color: '#ef4444', border: 'none', background: 'none', cursor: 'pointer', textDecoration: 'underline' }}>Xóa lọc</button>
+            </div>
+          )}
         </div>
 
         {/* Venues grid */}
         <div className="venues-grid">
+          {venues.length === 0 && !isSearching && (
+            <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '3rem', color: '#94a3b8' }}>
+              <h3>Không tìm thấy sân phù hợp</h3>
+              <p>Hãy thử yêu cầu khác bằng ngôn ngữ tự nhiên.</p>
+            </div>
+          )}
           {venues.map((venue) => (
             <div key={venue.id} className="venue-card">
               <div className="venue-image">

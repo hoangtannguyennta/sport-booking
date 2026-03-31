@@ -17,29 +17,48 @@ class VenueController extends Controller
     public function index(Request $request)
     {
         $query = Venue::query();
+        $aiFilters = null;
 
-        if ($request->has('address')) {
-            $query->where('address', 'like', '%' . $request->input('address') . '%');
-        }
+        if ($request->filled('query')) {
+            $responseAi = $this->parseSearch($request);
+            if ($responseAi->status() === 200 && !isset($responseAi->getData()->error)) {
+                $aiData = $responseAi->getData();
+                $aiFilters = $aiData;
+                if (!empty($aiFilters->address)) {
+                    $query->where('address', 'like', '%' . $aiFilters->address . '%');
+                }
+                if (!empty($aiFilters->sport)) {
+                    $query->where('name', 'like', '%' . $aiFilters->sport . '%');
+                }
+                if (!empty($aiFilters->date)) {
+                    $date = $aiFilters->date;
+                    $query->whereHas('timeSlots', function ($q) use ($date) {
+                        $q->whereDoesntHave('bookings', fn($bq) => $bq->where('booking_date', $date));
+                    });
+                }
+            }
+        } else {
+            // Lọc truyền thống
+            if ($request->filled('address') && $request->input('address') !== 'all') {
+                $query->where('address', 'like', '%' . $request->input('address') . '%');
+            }
 
-        if ($request->has('sport')) {
-            $query->where('name', 'like', '%' . $request->input('sport') . '%');
-        }
+            if ($request->filled('sport') && $request->input('sport') !== 'all') {
+                $query->where('name', 'like', '%' . $request->input('sport') . '%');
+            }
 
-        if ($request->has('date')) {
-            $request->validate(['date' => 'date_format:Y-m-d']);
-            $date = $request->input('date');
-
-            $query->whereHas('timeSlots', function ($timeSlotQuery) use ($date) {
-                $timeSlotQuery->whereDoesntHave('bookings', function ($bookingQuery) use ($date) {
-                    $bookingQuery->where('booking_date', $date);
+            if ($request->filled('date')) {
+                $date = $request->input('date');
+                $query->whereHas('timeSlots', function ($q) use ($date) {
+                    $q->whereDoesntHave('bookings', fn($bq) => $bq->where('booking_date', $date));
                 });
-            });
+            }
         }
 
         return response()->json([
             'success' => true,
-            'data' => $query->latest()->get()
+            'data' => $query->latest()->get(),
+            'ai_filters' => $aiFilters
         ]);
     }
 
@@ -149,8 +168,8 @@ class VenueController extends Controller
             return response()->json(['error' => 'AI service is not configured. Please set GEMINI_API_KEY in your .env file.'], 500);
         }
 
-        // Use v1beta for better JSON support with Gemini 1.5 Flash
-        $baseUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
+        // Sửa lại model đúng: gemini-1.5-flash
+        $baseUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
         $apiUrl = $baseUrl . '?key=' . urlencode($apiKey);
 
         $prompt = "

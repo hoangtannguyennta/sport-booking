@@ -4,6 +4,7 @@ import ROUTES from "../constants/routes";
 // pages
 import Home from "../pages/Home";
 import Login from "../pages/Login";
+import VenuesPage from "../pages/VenuesPage";
 
 export interface AppRoute {
   path: string;
@@ -19,6 +20,10 @@ const routes: AppRoute[] = [
   {
     path: ROUTES.LOGIN,
     component: Login,
+  },
+  {
+    path: ROUTES.VenuesPage,
+    component: VenuesPage,
   }
 ];
 

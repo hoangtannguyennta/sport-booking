@@ -1,4 +1,21 @@
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+
 const Hero = () => {
+  const navigate = useNavigate();
+  const [sport, setSport] = useState("Tất cả môn");
+  const [location, setLocation] = useState("all");
+  const [date, setDate] = useState("");
+
+  const handleSearch = () => {
+    const params = new URLSearchParams();
+    if (sport !== "Tất cả môn") params.append("sport", sport);
+    if (location !== "all") params.append("address", location);
+    if (date) params.append("date", date);
+    
+    navigate(`/venues?${params.toString()}`);
+  };
+
   return (
       <section className="hero">
       {/* Background */}
@@ -49,7 +66,7 @@ const Hero = () => {
 
               <div className="search-field-content">
                 <label>Môn thể thao</label>
-                <select>
+                <select value={sport} onChange={(e) => setSport(e.target.value)}>
                   <option>Tất cả môn</option>
                   <option>Bóng đá</option>
                   <option>Tennis</option>
@@ -75,11 +92,11 @@ const Hero = () => {
 
               <div className="search-field-content">
                 <label>Địa điểm</label>
-                <select>
-                  <option>TP. Hồ Chí Minh</option>
-                  <option>Hà Nội</option>
-                  <option>Đà Nẵng</option>
-                  <option>Bình Dương</option>
+                <select value={location} onChange={(e) => setLocation(e.target.value)}>
+                  <option value="all">Tất cả địa điểm</option>
+                  <option value="Hồ Chí Minh">TP. Hồ Chí Minh</option>
+                  <option value="Hà Nội">Hà Nội</option>
+                  <option value="Đà Nẵng">Đà Nẵng</option>
                 </select>
               </div>
             </div>
@@ -102,12 +119,16 @@ const Hero = () => {
 
               <div className="search-field-content">
                 <label>Ngày đặt</label>
-                <input type="date" />
+                <input 
+                  type="date" 
+                  value={date} 
+                  onChange={(e) => setDate(e.target.value)} 
+                />
               </div>
             </div>
 
             {/* Search Button */}
-            <button className="btn btn-primary search-btn">
+            <button className="btn btn-primary search-btn" onClick={handleSearch}>
               Tìm sân
             </button>
           </div>

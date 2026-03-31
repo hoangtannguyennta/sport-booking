@@ -24,7 +24,7 @@ class MatchController extends Controller
         if ($request->filled('query')) {
             $responseAi = $this->parseSearch($request);
             $aiData = $responseAi->getData();
-
+            
             if ($responseAi->status() === 200 && !isset($aiData->error)) {
                 $queryBuilder->when(!empty($aiData->sport), function ($q) use ($aiData) {
                     $q->whereHas('booking.venue', function ($venueQ) use ($aiData) {
