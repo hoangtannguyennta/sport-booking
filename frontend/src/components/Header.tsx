@@ -2,7 +2,11 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 
-const Header = () => {
+interface HeaderProps {
+  onVenueSuccess?: () => void;
+}
+
+const Header = ({ onVenueSuccess }: HeaderProps) => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [user, setUser] = useState<any>(null);
 
@@ -108,10 +112,7 @@ const Header = () => {
       setImageFile(null);
       setPreviewUrl(null);
 
-      // Nếu đang ở trang chủ, có thể cần load lại danh sách sân
-      if (window.location.pathname === '/') {
-        window.location.reload();
-      }
+      if (onVenueSuccess) onVenueSuccess();
     } catch (error: any) {
       alert(error.response?.data?.message || 'Có lỗi xảy ra khi đăng ký sân');
     } finally {

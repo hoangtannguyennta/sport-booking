@@ -28,9 +28,10 @@ const vndFormatter = new Intl.NumberFormat('vi-VN', {
 
 interface FeaturedVenuesProps {
   onBookingSuccess?: () => void;
+  venueTrigger?: number;
 }
 
-const FeaturedVenues = ({ onBookingSuccess }: FeaturedVenuesProps) => {
+const FeaturedVenues = ({ onBookingSuccess, venueTrigger }: FeaturedVenuesProps) => {
   const [venues, setVenues] = useState<Venue[]>([]);
   const [selectedVenue, setSelectedVenue] = useState<Venue | null>(null);
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
@@ -65,7 +66,7 @@ const FeaturedVenues = ({ onBookingSuccess }: FeaturedVenuesProps) => {
   useEffect(() => { 
     fetchData();
     fetchTimeSlots();
-  }, []);
+  }, [venueTrigger]);
 
   const handleOpenBooking = (venue: Venue) => {
     const token = localStorage.getItem('token');

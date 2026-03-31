@@ -49,6 +49,7 @@ class VenueController extends Controller
     public function store(Request $request)
     {
         $request->validate([
+            'sprot_id' => 'nullable|integer|min:1',
             'name' => 'required|string|max:255',
             'address' => 'required|string',
             'price_per_hour' => 'required|numeric',
@@ -65,6 +66,7 @@ class VenueController extends Controller
             'address' => $request->address,
             'price_per_hour' => $request->price_per_hour,
             'image' => $imagePath,
+            'sport_id' => $request->sport_id,
             'status' => 'active',
         ]);
 

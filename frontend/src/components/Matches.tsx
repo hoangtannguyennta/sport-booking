@@ -36,6 +36,9 @@ const Matches = ({ refreshTrigger }: MatchesProps) => {
     const [loading, setLoading] = useState(true);
     const [currentUser, setCurrentUser] = useState<User | null>(null);
     const [processingId, setProcessingId] = useState<number | null>(null);
+    const [aiQuery, setAiQuery] = useState("");
+    const [isParsing, setIsParsing] = useState(false);
+    const [filterInfo, setFilterInfo] = useState<{ sport?: string; date?: string } | null>(null);
 
     const fetchUser = async () => {
       try {
@@ -77,15 +80,32 @@ const Matches = ({ refreshTrigger }: MatchesProps) => {
       }
     };
 
-    const fetchMatches = async () => {
+    const handleAISearch = (e: React.FormEvent) => {
+      e.preventDefault();
+      if (!aiQuery.trim()) return;
+      fetchMatches(aiQuery);
+    };
+
+    const fetchMatches = async (searchQuery?: string) => {
+      setIsParsing(!!searchQuery);
       try {
-        const res = await api.get('/matches');
+        const res = await api.get('/matches', {
+            params: searchQuery ? { query: searchQuery } : {}
+        });
         const data = res.data.data || res.data.matches || [];
         setMatches(data);
+        
+        // Cập nhật thông tin filter từ backend trả về để hiển thị UI
+        if (res.data.ai_filters) {
+            setFilterInfo(res.data.ai_filters);
+        } else if (!searchQuery) {
+            setFilterInfo(null);
+        }
       } catch (error) {
         console.error("Lỗi khi lấy danh sách trận đấu:", error);
       } finally {
         setLoading(false);
+        setIsParsing(false);
       }
     };
 
@@ -121,12 +141,43 @@ const Matches = ({ refreshTrigger }: MatchesProps) => {
       <>
       <main className="main-matches">
       <div className="container">
+        {/* AI Search Box */}
+        <div className="ai-search-container" style={{ marginBottom: '2rem' }}>
+          <form onSubmit={handleAISearch} style={{ position: 'relative' }}>
+            <input 
+              type="text" 
+              className="search-field"
+              style={{ width: '100%', padding: '1rem 3rem 1rem 3rem', borderRadius: '1rem', border: '2px solid #e2e8f0' }}
+              placeholder="Hỏi AI: Tìm sân cầu lông chiều hôm nay..."
+              value={aiQuery}
+              onChange={(e) => setAiQuery(e.target.value)}
+            />
+            <div style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: '#6366f1' }}>
+              {/* <SparklesIcon /> */}
+            </div>
+            <button 
+              type="submit" 
+              className="btn btn-primary"
+              style={{ position: 'absolute', right: '0.5rem', top: '50%', transform: 'translateY(-50%)', padding: '0.5rem 1rem' }}
+              disabled={isParsing}
+            >
+              {isParsing ? "Đang phân tích..." : "Tìm bằng AI"}
+            </button>
+          </form>
+          {filterInfo && (
+            <div style={{ marginTop: '0.5rem', fontSize: '0.875rem', color: '#64748b' }}>
+              Đang hiển thị kết quả cho: <b>{filterInfo.sport || 'Tất cả môn'}</b> {filterInfo.date && <>ngày <b>{filterInfo.date}</b></>}
+              <button onClick={() => { setAiQuery(""); fetchMatches(); }} style={{ marginLeft: '10px', color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer' }}>Xóa lọc</button>
+            </div>
+          )}
+        </div>
+
         {/* Section Header */}
         <div className="section-header-matches">
           <h2>Các trận sắp diễn ra</h2>
           <span className="match-count">{matches.length} trận</span>
         </div>
-
+        
         {/* Match Cards Grid */}
         <div className="match-grid">
           {matches.map((match) => {

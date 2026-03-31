@@ -10,17 +10,22 @@ import Matches from '../components/Matches';
 
 export default function Home() {
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [venueTrigger, setVenueTrigger] = useState(0);
 
   const handleBookingSuccess = () => {
     setRefreshTrigger(prev => prev + 1);
   };
 
+  const handleVenueSuccess = () => {
+    setVenueTrigger(prev => prev + 1);
+  };
+
   return (
     <>
-      <Header />
+      <Header onVenueSuccess={handleVenueSuccess} />
       <Hero />
       <SportCategories />
-      <FeaturedVenues onBookingSuccess={handleBookingSuccess} />
+      <FeaturedVenues onBookingSuccess={handleBookingSuccess} venueTrigger={venueTrigger} />
       <Matches refreshTrigger={refreshTrigger} />
       <Footer />
     </>
