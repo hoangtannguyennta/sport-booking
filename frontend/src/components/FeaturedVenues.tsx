@@ -73,7 +73,7 @@ const FeaturedVenues = ({ onBookingSuccess, venueTrigger }: FeaturedVenuesProps)
     }
   };
 
-  useEffect(() => { 
+  useEffect(() => {
     fetchData();
     fetchTimeSlots();
   }, [venueTrigger]);
@@ -117,7 +117,7 @@ const FeaturedVenues = ({ onBookingSuccess, venueTrigger }: FeaturedVenuesProps)
   };
 
   return (
-   <section className="section section-gray" id="venues">
+    <section className="section section-gray" id="venues">
       <div className="container">
         {/* Section header */}
         <div className="section-header" style={{ marginBottom: '2rem' }}>
@@ -126,42 +126,58 @@ const FeaturedVenues = ({ onBookingSuccess, venueTrigger }: FeaturedVenuesProps)
         </div>
 
         {/* AI Search Bar */}
-        <div className="ai-search-container" style={{ marginBottom: '3rem' }}>
-          <form onSubmit={handleAISearch} style={{ 
-            display: 'flex', 
+        <div className="ai-search-container" style={{ marginBottom: '2rem', maxWidth: '700px', marginInline: 'auto' }}>
+          <form onSubmit={handleAISearch} style={{
+            display: 'flex',
             alignItems: 'center',
             background: 'white',
-            padding: '6px',
-            borderRadius: '1.25rem',
-            boxShadow: '0 4px 20px rgba(0,0,0,0.05)',
-            border: '1px solid #e5e7eb'
+            padding: '4px 6px',
+            borderRadius: '100px',
+            boxShadow: '0 4px 15px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.02)',
+            border: '1px solid #e2e8f0',
+            transition: 'all 0.2s ease'
           }}>
-            <div style={{ paddingLeft: '1rem', color: '#6366f1' }}>
+            <div style={{ paddingLeft: '1.2rem', color: '#6366f1', display: 'flex' }}>
               <SparklesIcon />
             </div>
-            <input 
-              type="text" 
-              style={{ flex: 1, padding: '0.8rem 1rem', border: 'none', outline: 'none', fontSize: '1rem' }}
+            <input
+              type="text"
+              style={{ 
+                flex: 1, 
+                padding: '0.6rem 0.8rem', 
+                border: 'none', 
+                outline: 'none', 
+                fontSize: '0.95rem',
+                color: '#1f2937'
+              }}
               placeholder="Hỏi AI: Tìm sân cầu lông tại Huế vào tối mai..."
               value={aiQuery}
               onChange={(e) => setAiQuery(e.target.value)}
             />
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               className="btn btn-primary"
-              style={{ padding: '0.6rem 1.5rem', borderRadius: '1rem', display: 'flex', alignItems: 'center', gap: '8px' }}
+              style={{ 
+                padding: '0.5rem 1.25rem', 
+                borderRadius: '100px', 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '6px',
+                fontSize: '0.9rem',
+                fontWeight: 600
+              }}
               disabled={isSearching}
             >
-              {isSearching ? "Đang tìm..." : <><SearchIcon /> Tìm bằng AI</>}
+              {isSearching ? "..." : <><SearchIcon /> Tìm ngay</>}
             </button>
           </form>
           {filterInfo && (
-            <div style={{ marginTop: '1rem', display: 'flex', gap: '8px', alignItems: 'center' }}>
+            <div style={{ marginTop: '0.75rem', display: 'flex', gap: '8px', alignItems: 'center', justifyContent: 'center' }}>
               <span style={{ fontSize: '0.85rem', color: '#64748b' }}>Đang lọc:</span>
-              <div style={{ background: '#eef2ff', color: '#6366f1', padding: '4px 12px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: '600' }}>
+              <div style={{ background: '#eef2ff', color: '#6366f1', padding: '2px 10px', borderRadius: '100px', fontSize: '0.75rem', fontWeight: '600', border: '1px solid #c7d2fe' }}>
                 {filterInfo.sport || 'Môn học'} {filterInfo.address && `• ${filterInfo.address}`} {filterInfo.date && `• ${filterInfo.date}`}
               </div>
-              <button onClick={() => { setAiQuery(""); fetchData(); }} style={{ fontSize: '0.8rem', color: '#ef4444', border: 'none', background: 'none', cursor: 'pointer', textDecoration: 'underline' }}>Xóa lọc</button>
+              <button onClick={() => { setAiQuery(""); fetchData(); }} style={{ fontSize: '0.75rem', color: '#ef4444', border: 'none', background: 'none', cursor: 'pointer', textDecoration: 'underline' }}>Xóa</button>
             </div>
           )}
         </div>
@@ -181,11 +197,10 @@ const FeaturedVenues = ({ onBookingSuccess, venueTrigger }: FeaturedVenuesProps)
 
                 {venue.badge && (
                   <span
-                    className={`venue-badge ${
-                      venue.badge.type === "new"
+                    className={`venue-badge ${venue.badge.type === "new"
                         ? "venue-badge-new"
                         : ""
-                    }`}
+                      }`}
                   >
                     {venue.badge.label}
                   </span>
@@ -230,7 +245,7 @@ const FeaturedVenues = ({ onBookingSuccess, venueTrigger }: FeaturedVenuesProps)
                     <span className="price-unit">/giờ</span>
                   </div>
 
-                  <button 
+                  <button
                     className="btn btn-primary btn-sm"
                     onClick={() => handleOpenBooking(venue)}
                   >
@@ -254,21 +269,21 @@ const FeaturedVenues = ({ onBookingSuccess, venueTrigger }: FeaturedVenuesProps)
             background: 'white', padding: '2rem', borderRadius: '1rem',
             width: '100%', maxWidth: '500px', position: 'relative'
           }}>
-            <button 
+            <button
               onClick={() => setSelectedVenue(null)}
               style={{ position: 'absolute', top: '1rem', right: '1rem', border: 'none', background: 'none', fontSize: '1.5rem', cursor: 'pointer' }}
             >
               ×
             </button>
             <h2 style={{ marginBottom: '1.5rem' }}>Đặt sân: {selectedVenue.name}</h2>
-            
+
             <form onSubmit={handleBookingSubmit}>
               <div style={{ marginBottom: '1rem' }}>
                 <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>Ngày đặt</label>
-                <input 
-                  type="date" 
-                  required 
-                  className="search-field" 
+                <input
+                  type="date"
+                  required
+                  className="search-field"
                   style={{ width: '100%', padding: '0.5rem' }}
                   value={bookingDate}
                   onChange={(e) => setBookingDate(e.target.value)}
@@ -278,8 +293,8 @@ const FeaturedVenues = ({ onBookingSuccess, venueTrigger }: FeaturedVenuesProps)
 
               <div style={{ marginBottom: '1rem' }}>
                 <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>Khung giờ</label>
-                <select 
-                  required 
+                <select
+                  required
                   style={{ width: '100%', padding: '0.5rem' }}
                   value={timeSlotId}
                   onChange={(e) => setTimeSlotId(e.target.value)}
@@ -294,17 +309,17 @@ const FeaturedVenues = ({ onBookingSuccess, venueTrigger }: FeaturedVenuesProps)
               <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
                 <div style={{ flex: 1 }}>
                   <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>Số người tối đa</label>
-                  <input 
-                    type="number" 
-                    min="2" 
-                    style={{ width: '100%', padding: '0.5rem' }} 
+                  <input
+                    type="number"
+                    min="2"
+                    style={{ width: '100%', padding: '0.5rem' }}
                     value={maxPlayers}
                     onChange={(e) => setMaxPlayers(parseInt(e.target.value))}
                   />
                 </div>
                 <div style={{ flex: 1 }}>
                   <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>Trình độ</label>
-                  <select 
+                  <select
                     style={{ width: '100%', padding: '0.5rem' }}
                     value={skillLevel}
                     onChange={(e) => setSkillLevel(e.target.value)}
@@ -319,7 +334,7 @@ const FeaturedVenues = ({ onBookingSuccess, venueTrigger }: FeaturedVenuesProps)
 
               <div style={{ marginBottom: '1.5rem' }}>
                 <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>Ghi chú</label>
-                <textarea 
+                <textarea
                   style={{ width: '100%', padding: '0.5rem', minHeight: '80px' }}
                   value={note}
                   onChange={(e) => setNote(e.target.value)}
@@ -327,9 +342,9 @@ const FeaturedVenues = ({ onBookingSuccess, venueTrigger }: FeaturedVenuesProps)
                 ></textarea>
               </div>
 
-              <button 
-                type="submit" 
-                className="btn btn-primary" 
+              <button
+                type="submit"
+                className="btn btn-primary"
                 style={{ width: '100%' }}
                 disabled={loading}
               >

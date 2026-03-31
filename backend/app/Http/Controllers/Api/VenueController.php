@@ -68,7 +68,7 @@ class VenueController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'sprot_id' => 'nullable|integer|min:1',
+            'sport_id' => 'nullable|integer|min:1',
             'name' => 'required|string|max:255',
             'address' => 'required|string',
             'price_per_hour' => 'required|numeric',
