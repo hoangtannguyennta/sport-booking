@@ -188,7 +188,7 @@ const Header = ({ onVenueSuccess }: HeaderProps) => {
 
             {/* Desktop Navigation */}
             <nav className="nav-desktop">
-              <a href="#" className="nav-link active">Trang chủ</a>
+              <a onClick={() => navigate('/')} className="nav-link active">Trang chủ</a>
               {/* <a href="#sports" className="nav-link">Môn thể thao</a>
             <a href="#venues" className="nav-link">Sân bãi</a>
             <a href="#" className="nav-link">Liên hệ</a> */}
@@ -202,7 +202,7 @@ const Header = ({ onVenueSuccess }: HeaderProps) => {
               >
                 Đăng ký sân
               </button>
-              <button className="btn btn-primary">Đặt sân ngay</button>
+              {/* <button className="btn btn-primary">Đặt sân ngay</button> */}
             </div>
 
             {/* Mobile menu button */}
