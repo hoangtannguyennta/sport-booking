@@ -36,6 +36,6 @@ class Matches extends Model
     public function usersMatch()
     {
         return $this->belongsToMany(User::class, 'match_user', 'match_id', 'user_id')
-            ->withPivot('role');
+            ->withPivot('role', 'status', 'joined_at');
     }
 }

@@ -54,6 +54,7 @@ class MatchSeeder extends Seeder
                     'user_id'  => $host->id,
                     'role'     => 'host',
                     'joined_at'=> now(),
+                    'status'   => collect(['pending', 'accepted', 'rejected'])->random(),
                 ]);
 
                 // Thêm player

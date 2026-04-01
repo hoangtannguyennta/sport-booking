@@ -29,6 +29,7 @@ return new class extends Migration
             $table->timestamp('joined_at')->useCurrent();
 
             $table->unique(['match_id', 'user_id']);
+            $table->enum('status', ['pending', 'accepted', 'rejected'])->default('pending');
         });
     }
 

@@ -116,7 +116,9 @@ class VenueController extends Controller
      */
     public function showBooking($id)
     {
-        $bookings = Venue::findOrFail($id)->bookings()->with(['timeSlot', 'user', 'venue'])->get();
+        $bookings = Venue::findOrFail($id)->bookings()
+            ->where('booking_date', '>=', now()->toDateString())
+            ->with(['timeSlot', 'user', 'venue'])->get();
 
         return response()->json([
             'success' => true,

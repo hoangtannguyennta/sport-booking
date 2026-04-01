@@ -7,6 +7,9 @@ interface User {
   id: number;
   name: string;
   skill_level?: string;
+  pivot?: {
+    status?: string;
+  };
 }
 
 interface Match {
@@ -151,6 +154,15 @@ const Matches = ({ refreshTrigger }: MatchesProps) => {
       all: "Mọi trình độ"
     };
     return levels[level] || "Mọi trình độ";
+  };
+
+  const getParticipantStatus = (status?: string) => {
+    const statuses: Record<string, { label: string, color: string }> = {
+      pending: { label: "Chờ xác nhận", color: "#1e40af" },
+      accepted: { label: "Đã xác nhận", color: "#166534" },
+      rejected: { label: "Từ chối", color: "#991b1b" }
+    };
+    return status ? statuses[status] : null;
   };
 
   if (loading) {
@@ -448,9 +460,21 @@ const Matches = ({ refreshTrigger }: MatchesProps) => {
                             </span>
                           )}
                         </div>
-                        {user.id === selectedMatchParticipants.host.id && (
-                          <span style={{ fontSize: '0.7rem', color: '#6366f1', fontWeight: 700, textTransform: 'uppercase' }}>Chủ trận</span>
-                        )}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '2px' }}>
+                          {user.id === selectedMatchParticipants.host.id && (
+                            <span style={{ fontSize: '0.7rem', color: '#6366f1', fontWeight: 700, textTransform: 'uppercase' }}>Chủ trận</span>
+                          )}
+                          {user?.pivot?.status && user.id !== selectedMatchParticipants.host.id && (
+                            <span style={{ 
+                              fontSize: '0.65rem', 
+                              fontWeight: 700, 
+                              textTransform: 'uppercase',
+                              color: getParticipantStatus(user.pivot.status)?.color
+                            }}>
+                              {user.id === selectedMatchParticipants.host.id ? '' : `• ${getParticipantStatus(user.pivot.status)?.label}`}
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
                   ))}
