@@ -32,7 +32,9 @@ class MatchController extends Controller
 
             $queryBuilder->when(!empty($aiData->sport), function ($q) use ($aiData) {
                 $q->whereHas('booking.venue', function ($venueQ) use ($aiData) {
-                    $venueQ->where('name', 'like', '%' . $aiData->sport . '%');
+                    $venueQ->whereHas('sport', function ($sportQ) use ($aiData) {
+                        $sportQ->where('name', 'like', '%' . $aiData->sport . '%');
+                    });
                 });
             })
             ->when(!empty($aiData->address), function ($q) use ($aiData) {
@@ -42,7 +44,8 @@ class MatchController extends Controller
             })
             ->when(!empty($aiData->date), function ($q) use ($aiData) {
                 $q->whereHas('booking', function ($bookingQ) use ($aiData) {
-                    $bookingQ->where('booking_date', $aiData->date);
+                    $dates = is_array($aiData->date) ? $aiData->date : [$aiData->date];
+                    $bookingQ->whereIn('booking_date', $dates);
                 });
             })
             ->when(!empty($aiData->price_max), function ($q) use ($aiData) {
@@ -154,7 +157,6 @@ class MatchController extends Controller
      */
     private function manualParse($query)
     {
-        $originalQuery = $query;
         $query = mb_strtolower($query);
         $data = [
             'sport' => null,
@@ -198,31 +200,45 @@ class MatchController extends Controller
         if (str_contains($query, 'tối')) { $data['time_from'] = '18:00'; $data['time_to'] = '22:00'; }
 
         // Lọc theo thời gian (ngày)
+        $foundDates = [];
         if (str_contains($query, 'nay')) {
-            $data['date'] = now()->format('Y-m-d');
-        } elseif (str_contains($query, 'mai')) {
-            $data['date'] = now()->addDay()->format('Y-m-d');
-        } elseif (str_contains($query, 'thứ 2') || str_contains($query, 'thứ hai')) {
-            $data['date'] = now()->next(1)->format('Y-m-d');
-        } elseif (str_contains($query, 'thứ 3') || str_contains($query, 'thứ ba')) {
-            $data['date'] = now()->next(2)->format('Y-m-d');
-        } elseif (str_contains($query, 'thứ 4') || str_contains($query, 'thứ tư')) {
-            $data['date'] = now()->next(3)->format('Y-m-d');
-        } elseif (str_contains($query, 'thứ 5') || str_contains($query, 'thứ năm')) {
-            $data['date'] = now()->next(4)->format('Y-m-d');
-        } elseif (str_contains($query, 'thứ 6') || str_contains($query, 'thứ sáu')) {
-            $data['date'] = now()->next(5)->format('Y-m-d');
-        } elseif (str_contains($query, 'thứ 7') || str_contains($query, 'thứ bảy')) {
-            $data['date'] = now()->next(6)->format('Y-m-d');
-        } elseif (str_contains($query, 'chủ nhật')) {
-            $data['date'] = now()->next(0)->format('Y-m-d');
+            $foundDates[] = now()->format('Y-m-d');
+        }
+        if (str_contains($query, 'mai')) {
+            $foundDates[] = now()->addDay()->format('Y-m-d');
+        }
+
+        $dayMap = [
+            'thứ 2' => 1, 'thứ hai' => 1,
+            'thứ 3' => 2, 'thứ ba' => 2,
+            'thứ 4' => 3, 'thứ tư' => 3,
+            'thứ 5' => 4, 'thứ năm' => 4,
+            'thứ 6' => 5, 'thứ sáu' => 5,
+            'thứ 7' => 6, 'thứ bảy' => 6,
+            'chủ nhật' => 0,
+        ];
+
+        foreach ($dayMap as $key => $val) {
+            if (str_contains($query, $key)) {
+                $targetDate = now()->next($val)->format('Y-m-d');
+                if (!in_array($targetDate, $foundDates)) {
+                    $foundDates[] = $targetDate;
+                }
+            }
+        }
+
+        if (!empty($foundDates)) {
+            // Nếu chỉ có 1 ngày thì trả về string, nhiều ngày trả về array
+            $data['date'] = count($foundDates) === 1 ? $foundDates[0] : $foundDates;
         }
 
         // Môn thể thao phổ biến
         if (str_contains($query, 'cầu lông')) $data['sport'] = 'Cầu lông';
         if (str_contains($query, 'bóng đá')) $data['sport'] = 'Bóng đá';
+        if (str_contains($query, 'tennis')) $data['sport'] = 'Tennis';
+        if (str_contains($query, 'bơi lội')) $data['sport'] = 'Bơi lội';
 
-        return (object)$data;
+        return (object) $data;
     }
 
     public function parseSearch(Request $request)

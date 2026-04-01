@@ -16,10 +16,10 @@ class VenuesSeeder extends Seeder
                 'name' => 'Sân bóng đá Phú Xuân',
                 'address' => '97 Điện Biên Phủ, Huế',
                 'image' => 'venues/football-1.jpg',
-                'price_per_hour' => 500000,
+                'price_per_hour' => 100000,
             ],
             [
-                'sport_id' => 2,
+                'sport_id' => 3,
                 'name' => 'Sân cầu lông Tây Lộc',
                 'address' => '97 Nguyễn Trãi, Huế',
                 'image' => 'venues/tennis-1.jpg',
@@ -30,7 +30,7 @@ class VenuesSeeder extends Seeder
                 'name' => 'CLB Cầu Lông Gia Hội',
                 'address' => '27 Nguyễn Chí Thanh, Huế',
                 'image' => 'venues/badminton-1.jpg',
-                'price_per_hour' => 500000,
+                'price_per_hour' => 200000,
             ],
         ]);
     }
