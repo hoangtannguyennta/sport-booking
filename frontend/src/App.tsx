@@ -26,7 +26,23 @@ function App() {
     <>
       <BrowserRouter>
         <AppRoutes />
-        <Toaster position="top-right" />
+         <Toaster
+        position="top-center"
+        gutter={8}
+        containerStyle={{
+          top: 20,
+        }}
+        toastOptions={{
+          duration: 3000,
+          style: {
+            background: "#333",
+            color: "#fff",
+            borderRadius: "8px",
+            padding: "12px 16px",
+            fontSize: "14px",
+          },
+        }}
+      />
       </BrowserRouter>
     </>
   )

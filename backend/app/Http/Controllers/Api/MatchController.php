@@ -202,6 +202,16 @@ class MatchController extends Controller
             $data['date'] = now()->format('Y-m-d');
         } elseif (str_contains($query, 'mai')) {
             $data['date'] = now()->addDay()->format('Y-m-d');
+        } elseif (str_contains($query, 'thứ 2') || str_contains($query, 'thứ hai')) {
+            $data['date'] = now()->next(1)->format('Y-m-d');
+        } elseif (str_contains($query, 'thứ 3') || str_contains($query, 'thứ ba')) {
+            $data['date'] = now()->next(2)->format('Y-m-d');
+        } elseif (str_contains($query, 'thứ 4') || str_contains($query, 'thứ tư')) {
+            $data['date'] = now()->next(3)->format('Y-m-d');
+        } elseif (str_contains($query, 'thứ 5') || str_contains($query, 'thứ năm')) {
+            $data['date'] = now()->next(4)->format('Y-m-d');
+        } elseif (str_contains($query, 'thứ 6') || str_contains($query, 'thứ sáu')) {
+            $data['date'] = now()->next(5)->format('Y-m-d');
         } elseif (str_contains($query, 'thứ 7') || str_contains($query, 'thứ bảy')) {
             $data['date'] = now()->next(6)->format('Y-m-d');
         } elseif (str_contains($query, 'chủ nhật')) {
