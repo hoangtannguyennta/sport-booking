@@ -42,9 +42,10 @@ const Matches = ({ refreshTrigger }: MatchesProps) => {
     type: 'join' | 'leave';
     message: string;
   } | null>(null);
+  const [selectedMatchParticipants, setSelectedMatchParticipants] = useState<Match | null>(null);
   const [aiQuery, setAiQuery] = useState("");
   const [isParsing, setIsParsing] = useState(false);
-  const [filterInfo, setFilterInfo] = useState<{ sport?: string; date?: string } | null>(null);
+  const [filterInfo, setFilterInfo] = useState<{ sport?: string; date?: string; address?: string } | null>(null);
 
   const fetchUser = async () => {
     try {
@@ -225,13 +226,13 @@ const Matches = ({ refreshTrigger }: MatchesProps) => {
               }}>
                 <span style={{ fontSize: '0.875rem', color: '#64748b' }}>Kết quả cho:</span>
                 <div style={{ background: '#eef2ff', color: '#6366f1', padding: '4px 12px', borderRadius: '20px', fontSize: '0.85rem', fontWeight: 'bold', border: '1px solid #c7d2fe' }}>
-                  {filterInfo.sport || 'Tất cả môn'} {filterInfo.date && `• ${filterInfo.date}`}
+                  {filterInfo.sport || 'Tất cả môn'} {filterInfo.address && `• ${filterInfo.address}`} {filterInfo.date && `• ${filterInfo.date}`}
                 </div>
                 <button onClick={() => { setAiQuery(""); fetchMatches(); }} style={{ fontSize: '0.85rem', color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer', padding: '4px 8px', textDecoration: 'underline' }}>Thiết lập lại</button>
               </div>
             )}
           </div>
-
+            
           {/* Section Header */}
           <div className="section-header-matches">
             <h2>Các trận sắp diễn ra</h2>
@@ -301,7 +302,15 @@ const Matches = ({ refreshTrigger }: MatchesProps) => {
                       </div>
                     </div>
 
-                    <div className="match-actions">
+                    <div className="match-actions" style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                      <button
+                        className="btn-detail"
+                        style={{ background: '#f1f5f9', color: '#475569', border: 'none', padding: '6px 12px', borderRadius: '8px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600 }}
+                        onClick={() => setSelectedMatchParticipants(match)}
+                      >
+                        Chi tiết
+                      </button>
+
                       {isParticipant ? (
                         <button
                           className="btn-action btn-leave"
@@ -369,6 +378,64 @@ const Matches = ({ refreshTrigger }: MatchesProps) => {
                   Xác nhận
                 </button>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* Modal Chi tiết người tham gia */}
+        {selectedMatchParticipants && (
+          <div className="modal-overlay" style={{
+            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+            backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex',
+            justifyContent: 'center', alignItems: 'center', zIndex: 3000
+          }}>
+            <div className="modal-content" style={{
+              background: 'white', padding: '2rem', borderRadius: '1.25rem',
+              width: '100%', maxWidth: '450px', position: 'relative',
+              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)'
+            }}>
+              <button
+                onClick={() => setSelectedMatchParticipants(null)}
+                style={{ position: 'absolute', top: '1rem', right: '1rem', border: 'none', background: 'none', fontSize: '1.5rem', cursor: 'pointer', color: '#64748b' }}
+              >
+                ×
+              </button>
+              
+              <div style={{ marginBottom: '1.5rem' }}>
+                <h2 style={{ fontSize: '1.5rem', color: '#1e293b', marginBottom: '0.5rem' }}>Người tham gia</h2>
+                <p style={{ color: '#6366f1', fontWeight: 600 }}>{selectedMatchParticipants.booking.venue.name}</p>
+              </div>
+
+              <div style={{ maxHeight: '300px', overflowY: 'auto', paddingRight: '5px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                  {selectedMatchParticipants.users_match.map((user) => (
+                    <div key={user.id} style={{ 
+                      padding: '0.75rem 1rem', 
+                      borderRadius: '0.75rem', 
+                      background: '#f8fafc',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '12px',
+                      border: '1px solid #e2e8f0'
+                    }}>
+                      <div style={{ 
+                        width: '36px', height: '36px', background: user.id === selectedMatchParticipants.host.id ? '#6366f1' : '#e2e8f0', 
+                        color: user.id === selectedMatchParticipants.host.id ? 'white' : '#64748b',
+                        borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.9rem', fontWeight: 'bold'
+                      }}>
+                        {user.name.substring(0, 2).toUpperCase()}
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontWeight: 600, color: '#1e293b' }}>{user.name}</div>
+                        {user.id === selectedMatchParticipants.host.id && (
+                          <span style={{ fontSize: '0.7rem', color: '#6366f1', fontWeight: 700, textTransform: 'uppercase' }}>Chủ trận</span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <button className="btn btn-primary" style={{ width: '100%', marginTop: '1.5rem', borderRadius: '0.75rem' }} onClick={() => setSelectedMatchParticipants(null)}>Đóng</button>
             </div>
           </div>
         )}

@@ -154,6 +154,7 @@ class MatchController extends Controller
      */
     private function manualParse($query)
     {
+        $originalQuery = $query;
         $query = mb_strtolower($query);
         $data = [
             'sport' => null,
@@ -163,6 +164,28 @@ class MatchController extends Controller
             'time_from' => null,
             'time_to' => null,
         ];
+
+        // Danh sách các địa danh/con đường để nhận diện thủ công (Tập trung vào Huế)
+        $locations = [
+            'nguyễn trãi' => 'Nguyễn Trãi',
+            'lê lợi' => 'Lê Lợi',
+            'hùng vương' => 'Hùng Vương',
+            'điện biên phủ' => 'Điện Biên Phủ',
+            'gia hội' => 'Gia Hội',
+            'tây lộc' => 'Tây Lộc',
+            'vỹ dạ' => 'Vỹ Dạ',
+            'huế' => 'Huế',
+            'đà nẵng' => 'Đà Nẵng',
+            'hà nội' => 'Hà Nội',
+            'hồ chí minh' => 'Hồ Chí Minh',
+        ];
+
+        foreach ($locations as $keyword => $formattedName) {
+            if (str_contains($query, $keyword)) {
+                $data['address'] = $formattedName;
+                break;
+            }
+        }
 
         // Lọc theo giá
         if (str_contains($query, 'rẻ')) $data['price_max'] = 100000;
@@ -186,8 +209,8 @@ class MatchController extends Controller
         }
 
         // Môn thể thao phổ biến
-        if (str_contains($query, 'cầu lông')) $data['sport'] = 'cầu lông';
-        if (str_contains($query, 'bóng đá')) $data['sport'] = 'bóng đá';
+        if (str_contains($query, 'cầu lông')) $data['sport'] = 'Cầu lông';
+        if (str_contains($query, 'bóng đá')) $data['sport'] = 'Bóng đá';
 
         return (object)$data;
     }
