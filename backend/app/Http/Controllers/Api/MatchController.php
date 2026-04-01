@@ -62,6 +62,9 @@ class MatchController extends Controller
                 $q->whereHas('booking.timeSlot', function ($slotQ) use ($aiData) {
                     $slotQ->where('end_time', '<=', $aiData->time_to);
                 });
+            })
+            ->when(!empty($aiData->skill_level), function ($q) use ($aiData) {
+                $q->where('skill_level', $aiData->skill_level);
             });
             
             $aiFilters = $aiData; 
@@ -165,6 +168,7 @@ class MatchController extends Controller
             'price_max' => null,
             'time_from' => null,
             'time_to' => null,
+            'skill_level' => null,
         ];
 
         // Danh sách các địa danh/con đường để nhận diện thủ công (Tập trung vào Huế)
@@ -198,6 +202,12 @@ class MatchController extends Controller
         if (str_contains($query, 'sáng')) { $data['time_from'] = '06:00'; $data['time_to'] = '12:00'; }
         if (str_contains($query, 'chiều')) { $data['time_from'] = '13:00'; $data['time_to'] = '18:00'; }
         if (str_contains($query, 'tối')) { $data['time_from'] = '18:00'; $data['time_to'] = '22:00'; }
+
+        // Lọc theo trình độ
+        if (str_contains($query, 'yếu')) $data['skill_level'] = 'newbie';
+        if (str_contains($query, 'mới chơi') || str_contains($query, 'biết chơi')) $data['skill_level'] = 'beginner';
+        if (str_contains($query, 'trung bình') || str_contains($query, 'khá')) $data['skill_level'] = 'intermediate';
+        if (str_contains($query, 'trình cao') || str_contains($query, 'nâng cao') || str_contains($query, 'mạnh') || str_contains($query, 'giỏi')) $data['skill_level'] = 'advanced';
 
         // Lọc theo thời gian (ngày)
         $foundDates = [];
@@ -269,6 +279,7 @@ class MatchController extends Controller
             - 'price_max': The maximum price per hour (integer).
             - 'time_from': Start time in 'HH:mm' format.
             - 'time_to': End time in 'HH:mm' format.
+            - 'skill_level': The skill level requirement (one of: 'newbie', 'beginner', 'intermediate', 'advanced').
 
             Return a valid JSON object.
 

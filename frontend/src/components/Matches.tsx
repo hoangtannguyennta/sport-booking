@@ -49,7 +49,12 @@ const Matches = ({ refreshTrigger }: MatchesProps) => {
   const [selectedMatchParticipants, setSelectedMatchParticipants] = useState<Match | null>(null);
   const [aiQuery, setAiQuery] = useState("");
   const [isParsing, setIsParsing] = useState(false);
-  const [filterInfo, setFilterInfo] = useState<{ sport?: string; date?: string | string[]; address?: string } | null>(null);
+  const [filterInfo, setFilterInfo] = useState<{ 
+    sport?: string; 
+    date?: string | string[]; 
+    address?: string;
+    skill_level?: string;
+  } | null>(null);
 
   const fetchUser = async () => {
     try {
@@ -245,6 +250,7 @@ const Matches = ({ refreshTrigger }: MatchesProps) => {
                   {filterInfo.date && ` • ${Array.isArray(filterInfo.date) 
                     ? filterInfo.date.join(', ') 
                     : filterInfo.date}`}
+                  {filterInfo.skill_level && ` • Trình độ: ${getSkillLabel(filterInfo.skill_level)}`}
                 </div>
                 <button onClick={() => { setAiQuery(""); fetchMatches(); }} style={{ fontSize: '0.85rem', color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer', padding: '4px 8px', textDecoration: 'underline' }}>Thiết lập lại</button>
               </div>
