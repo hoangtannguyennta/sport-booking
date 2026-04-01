@@ -13,8 +13,8 @@ class VenuesSeeder extends Seeder
         DB::table('venues')->insert([
             [
                 'sport_id' => 1,
-                'name' => 'Sân bóng Tây Lộc',
-                'address' => '97 Nguyễn Trãi, Huế',
+                'name' => 'Sân bóng đá Phú Xuân',
+                'address' => '97 Điện Biên Phủ, Huế',
                 'image' => 'venues/football-1.jpg',
                 'price_per_hour' => 500000,
             ],
@@ -28,7 +28,7 @@ class VenuesSeeder extends Seeder
             [
                 'sport_id' => 3,
                 'name' => 'CLB Cầu Lông Gia Hội',
-                'address' => '27 Lê Lợi, Huế',
+                'address' => '27 Nguyễn Chí Thanh, Huế',
                 'image' => 'venues/badminton-1.jpg',
                 'price_per_hour' => 500000,
             ],

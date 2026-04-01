@@ -6,6 +6,7 @@ use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Faker\Factory as Faker;
 
 class UsersSeeder extends Seeder
 {
@@ -16,28 +17,22 @@ class UsersSeeder extends Seeder
      */
     public function run()
     {
-        DB::table('users')->insert([
-            [
-                'name' => 'Admin',
-                'email' => 'admin@sportbook.vn',
+        $faker = Faker::create('vi_VN');
+        $skills = ['newbie', 'intermediate', 'advanced'];
+
+        $users = [];
+
+        for ($i = 1; $i <= 30; $i++) {
+            $users[] = [
+                'name' => $faker->name,
+                'email' => 'user' . $i . '@sportbook.vn',
                 'password' => Hash::make('password123'),
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'name' => 'Hoàng Tấn Nguyên',
-                'email' => 'user1@sportbook.vn',
-                'password' => Hash::make('password123'),
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'name' => 'Nguyễn Đình Văn',
-                'email' => 'user2@sportbook.vn',
-                'password' => Hash::make('password123'),
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-        ]);
+                    'skill_level' => $skills[array_rand($skills)],
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ];
+            }
+
+        DB::table('users')->insert($users);
     }
 }

@@ -6,6 +6,7 @@ import toast from 'react-hot-toast';
 interface User {
   id: number;
   name: string;
+  skill_level?: string;
 }
 
 interface Match {
@@ -143,6 +144,7 @@ const Matches = ({ refreshTrigger }: MatchesProps) => {
 
   const getSkillLabel = (level: string) => {
     const levels: Record<string, string> = {
+      newbie: "Mới chơi",
       beginner: "Mới chơi",
       intermediate: "Trung bình",
       advanced: "Nâng cao",
@@ -426,7 +428,22 @@ const Matches = ({ refreshTrigger }: MatchesProps) => {
                         {user.name.substring(0, 2).toUpperCase()}
                       </div>
                       <div style={{ flex: 1 }}>
-                        <div style={{ fontWeight: 600, color: '#1e293b' }}>{user.name}</div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <div style={{ fontWeight: 600, color: '#1e293b' }}>{user.name}</div>
+                          {user.skill_level && (
+                            <span style={{ 
+                              fontSize: '0.65rem', 
+                              padding: '2px 6px', 
+                              borderRadius: '4px', 
+                              background: user.skill_level === 'advanced' ? '#fee2e2' : user.skill_level === 'intermediate' ? '#fef9c3' : '#dcfce7',
+                              color: user.skill_level === 'advanced' ? '#991b1b' : user.skill_level === 'intermediate' ? '#854d0e' : '#166534',
+                              fontWeight: 700,
+                              textTransform: 'uppercase'
+                            }}>
+                              {getSkillLabel(user.skill_level)}
+                            </span>
+                          )}
+                        </div>
                         {user.id === selectedMatchParticipants.host.id && (
                           <span style={{ fontSize: '0.7rem', color: '#6366f1', fontWeight: 700, textTransform: 'uppercase' }}>Chủ trận</span>
                         )}

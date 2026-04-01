@@ -27,7 +27,7 @@ return new class extends Migration
                 ->cascadeOnDelete();
 
             // trình độ trận
-            $table->enum('skill_level', ['beginner', 'intermediate', 'advanced'])
+            $table->enum('skill_level', ['newbie', 'beginner', 'intermediate', 'advanced'])
                 ->default('intermediate');
 
             $table->unsignedTinyInteger('max_players')->default(4);
