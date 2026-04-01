@@ -24,29 +24,51 @@ class MatchController extends Controller
         if ($request->filled('query')) {
             $responseAi = $this->parseSearch($request);
             $aiData = $responseAi->getData();
-            
-            if ($responseAi->status() === 200 && !isset($aiData->error)) {
-                $queryBuilder->when(!empty($aiData->sport), function ($q) use ($aiData) {
-                    $q->whereHas('booking.venue', function ($venueQ) use ($aiData) {
-                        $venueQ->where('name', 'like', '%' . $aiData->sport . '%');
-                    });
-                })
-                ->when(!empty($aiData->address), function ($q) use ($aiData) {
-                    $q->whereHas('booking.venue', function ($venueQ) use ($aiData) {
-                        $venueQ->where('address', 'like', '%' . $aiData->address . '%');
-                    });
-                })
-                ->when(!empty($aiData->date), function ($q) use ($aiData) {
-                    $q->whereHas('booking', function ($bookingQ) use ($aiData) {
-                        $bookingQ->where('booking_date', $aiData->date);
-                    });
-                });
-                
-                $aiFilters = $aiData; 
+
+            // Fallback: Nếu AI lỗi hoặc hết request, sử dụng hàm manualParse để tự xử lý
+            if ($responseAi->status() !== 200 || isset($aiData->error)) {
+                $aiData = $this->manualParse($request->input('query'));
             }
+
+            $queryBuilder->when(!empty($aiData->sport), function ($q) use ($aiData) {
+                $q->whereHas('booking.venue', function ($venueQ) use ($aiData) {
+                    $venueQ->where('name', 'like', '%' . $aiData->sport . '%');
+                });
+            })
+            ->when(!empty($aiData->address), function ($q) use ($aiData) {
+                $q->whereHas('booking.venue', function ($venueQ) use ($aiData) {
+                    $venueQ->where('address', 'like', '%' . $aiData->address . '%');
+                });
+            })
+            ->when(!empty($aiData->date), function ($q) use ($aiData) {
+                $q->whereHas('booking', function ($bookingQ) use ($aiData) {
+                    $bookingQ->where('booking_date', $aiData->date);
+                });
+            })
+            ->when(!empty($aiData->price_max), function ($q) use ($aiData) {
+                $q->whereHas('booking.venue', function ($venueQ) use ($aiData) {
+                    $venueQ->where('price_per_hour', '<=', $aiData->price_max);
+                });
+            })
+            ->when(!empty($aiData->time_from), function ($q) use ($aiData) {
+                $q->whereHas('booking.timeSlot', function ($slotQ) use ($aiData) {
+                    $slotQ->where('start_time', '>=', $aiData->time_from);
+                });
+            })
+            ->when(!empty($aiData->time_to), function ($q) use ($aiData) {
+                $q->whereHas('booking.timeSlot', function ($slotQ) use ($aiData) {
+                    $slotQ->where('end_time', '<=', $aiData->time_to);
+                });
+            });
+            
+            $aiFilters = $aiData; 
         }
 
-        $matches = $queryBuilder->latest()->get();
+        $matches = $queryBuilder
+        ->whereHas('booking', function ($bookingQ) {
+            $bookingQ->where('booking_date', '>=', now()->format('Y-m-d'));
+        })
+        ->latest()->get();
 
         return response()->json([
             'matches' => $matches,
@@ -127,6 +149,49 @@ class MatchController extends Controller
         ]);
     }
 
+    /**
+     * Xử lý tìm kiếm bằng từ khóa tiếng Việt (Fallback khi AI lỗi)
+     */
+    private function manualParse($query)
+    {
+        $query = mb_strtolower($query);
+        $data = [
+            'sport' => null,
+            'address' => null,
+            'date' => null,
+            'price_max' => null,
+            'time_from' => null,
+            'time_to' => null,
+        ];
+
+        // Lọc theo giá
+        if (str_contains($query, 'rẻ')) $data['price_max'] = 100000;
+        if (str_contains($query, 'tầm trung')) $data['price_max'] = 200000;
+        if (preg_match('/dưới (\d+)k/', $query, $matches)) $data['price_max'] = $matches[1] * 1000;
+
+        // Lọc theo khung giờ (buổi)
+        if (str_contains($query, 'sáng')) { $data['time_from'] = '06:00'; $data['time_to'] = '12:00'; }
+        if (str_contains($query, 'chiều')) { $data['time_from'] = '13:00'; $data['time_to'] = '18:00'; }
+        if (str_contains($query, 'tối')) { $data['time_from'] = '18:00'; $data['time_to'] = '22:00'; }
+
+        // Lọc theo thời gian (ngày)
+        if (str_contains($query, 'nay')) {
+            $data['date'] = now()->format('Y-m-d');
+        } elseif (str_contains($query, 'mai')) {
+            $data['date'] = now()->addDay()->format('Y-m-d');
+        } elseif (str_contains($query, 'thứ 7') || str_contains($query, 'thứ bảy')) {
+            $data['date'] = now()->next(6)->format('Y-m-d');
+        } elseif (str_contains($query, 'chủ nhật')) {
+            $data['date'] = now()->next(0)->format('Y-m-d');
+        }
+
+        // Môn thể thao phổ biến
+        if (str_contains($query, 'cầu lông')) $data['sport'] = 'cầu lông';
+        if (str_contains($query, 'bóng đá')) $data['sport'] = 'bóng đá';
+
+        return (object)$data;
+    }
+
     public function parseSearch(Request $request)
     {
         $request->validate(['query' => 'required|string']);
@@ -139,7 +204,7 @@ class MatchController extends Controller
         }
 
         // Use v1beta for better JSON support with Gemini 1.5 Flash
-        $baseUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
+        $baseUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
         $apiUrl = $baseUrl . '?key=' . urlencode($apiKey);
 
         $prompt = "
@@ -152,6 +217,9 @@ class MatchController extends Controller
             - 'date': The date the user wants to book. If they say 'hôm nay' (today), use today's date. If they say 'ngày mai' (tomorrow), use tomorrow's date. Format it as 'YYYY-MM-DD'.
             - 'sport': The type of sport (e.g., 'cầu lông', 'bóng đá').
             - 'address': The location or district (e.g., 'phú nhuận', 'quận 7').
+            - 'price_max': The maximum price per hour (integer).
+            - 'time_from': Start time in 'HH:mm' format.
+            - 'time_to': End time in 'HH:mm' format.
 
             Return a valid JSON object.
 

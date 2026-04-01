@@ -37,6 +37,11 @@ const Matches = ({ refreshTrigger }: MatchesProps) => {
   const [loading, setLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [processingId, setProcessingId] = useState<number | null>(null);
+  const [confirmModal, setConfirmModal] = useState<{
+    id: number;
+    type: 'join' | 'leave';
+    message: string;
+  } | null>(null);
   const [aiQuery, setAiQuery] = useState("");
   const [isParsing, setIsParsing] = useState(false);
   const [filterInfo, setFilterInfo] = useState<{ sport?: string; date?: string } | null>(null);
@@ -50,33 +55,41 @@ const Matches = ({ refreshTrigger }: MatchesProps) => {
     }
   };
 
-  const handleJoin = async (id: number) => {
-    if (!window.confirm("Bạn có muốn tham gia trận đấu này không?")) return;
-
-
-    setProcessingId(id);
-    try {
-      await api.post(`/matches/${id}/join`);
-      toast.success("Tham gia trận đấu thành công!");
-      await fetchMatches(); // Tải lại danh sách
-    } catch (error: any) {
-      const msg = error.response?.data?.message || "Lỗi khi tham gia trận đấu";
-      toast.error(msg);
-    } finally {
-      setProcessingId(null);
-    }
+  const handleJoin = (id: number) => {
+    setConfirmModal({
+      id,
+      type: 'join',
+      message: "Bạn có muốn tham gia trận đấu này không?"
+    });
   };
 
-  const handleLeave = async (id: number) => {
-    if (!window.confirm("Bạn có chắc chắn muốn rời khỏi trận đấu này?")) return;
+  const handleLeave = (id: number) => {
+    setConfirmModal({
+      id,
+      type: 'leave',
+      message: "Bạn có chắc chắn muốn rời khỏi trận đấu này?"
+    });
+  };
 
+  const handleConfirmAction = async () => {
+    if (!confirmModal) return;
+
+    const { id, type } = confirmModal;
+    setConfirmModal(null);
     setProcessingId(id);
+
     try {
-      await api.post(`/matches/${id}/leave`);
-      toast.success("Đã rời trận đấu.");
-      await fetchMatches(); // Tải lại danh sách
+      if (type === 'join') {
+        await api.post(`/matches/${id}/join`);
+        toast.success("Tham gia trận đấu thành công!");
+      } else {
+        await api.post(`/matches/${id}/leave`);
+        toast.success("Đã rời trận đấu.");
+      }
+      await fetchMatches();
     } catch (error: any) {
-      toast.error("Lỗi khi rời trận đấu");
+      const msg = error.response?.data?.message || `Lỗi khi ${type === 'join' ? 'tham gia' : 'rời'} trận đấu`;
+      toast.error(msg);
     } finally {
       setProcessingId(null);
     }
@@ -318,6 +331,47 @@ const Matches = ({ refreshTrigger }: MatchesProps) => {
             })}
           </div>
         </div>
+
+        {/* Modal xác nhận Custom */}
+        {confirmModal && (
+          <div className="modal-overlay" style={{
+            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+            backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex',
+            justifyContent: 'center', alignItems: 'center', zIndex: 3000
+          }}>
+            <div className="modal-content" style={{
+              background: 'white', padding: '2rem', borderRadius: '1rem',
+              width: '100%', maxWidth: '400px', textAlign: 'center',
+              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)'
+            }}>
+              <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>
+                {confirmModal.type === 'join' ? '🤝' : '🚪'}
+              </div>
+              <h3 style={{ marginBottom: '1rem', color: '#1e293b' }}>
+                {confirmModal.type === 'join' ? 'Tham gia trận đấu' : 'Rời trận đấu'}
+              </h3>
+              <p style={{ color: '#64748b', marginBottom: '2rem', lineHeight: '1.5' }}>
+                {confirmModal.message}
+              </p>
+              <div style={{ display: 'flex', gap: '1rem' }}>
+                <button 
+                  className="btn btn-outline" 
+                  style={{ flex: 1 }} 
+                  onClick={() => setConfirmModal(null)}
+                >
+                  Hủy bỏ
+                </button>
+                <button 
+                  className="btn btn-primary" 
+                  style={{ flex: 1 }} 
+                  onClick={handleConfirmAction}
+                >
+                  Xác nhận
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </main>
     </>
   );
