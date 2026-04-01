@@ -27,6 +27,11 @@ type BookingDetail = {
   user: {
     name: string;
   };
+  matches: {
+    host: {
+      name: string;
+    };
+  }[];
 };
 
 const vndFormatter = new Intl.NumberFormat('vi-VN', {
@@ -335,7 +340,7 @@ const VenuesPage = () => {
                           <div style={{ fontSize: '0.9rem', color: '#64748b', display: 'flex', alignItems: 'center', gap: '5px' }}>
                             <span style={{ color: '#6366f1', fontWeight: 600 }}>{booking.time_slot.start_time.substring(0, 5)} - {booking.time_slot.end_time.substring(0, 5)}</span>
                             <span>•</span>
-                            <span>Người đặt: {booking.user.name}</span>
+                            <span>Người đặt: {booking.matches[0]?.host?.name}</span>
                           </div>
                         </div>
                         <div style={{ background: '#dcfce7', color: '#166534', padding: '4px 12px', borderRadius: '1rem', fontSize: '0.75rem', fontWeight: 700 }}>

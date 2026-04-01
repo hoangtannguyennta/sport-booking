@@ -118,7 +118,7 @@ class VenueController extends Controller
     {
         $bookings = Venue::findOrFail($id)->bookings()
             ->where('booking_date', '>=', now()->toDateString())
-            ->with(['timeSlot', 'user', 'venue'])->get();
+            ->with(['timeSlot', 'user', 'venue', 'matches.host'])->get();
 
         return response()->json([
             'success' => true,

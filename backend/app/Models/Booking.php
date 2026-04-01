@@ -28,4 +28,9 @@ class Booking extends Model
     {
         return $this->belongsTo(TimeSlots::class);
     }
+
+    public function matches()
+    {
+        return $this->hasMany(Matches::class);
+    }
 }
